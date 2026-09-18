@@ -4,62 +4,20 @@
 <head>
     <title>Chat Room</title>
 </head>
+
 <body>
 
-<h1>Chat Room</h1>
+<h1>Welcome to Chat Room</h1>
 
-<input id="username" placeholder="Enter username">
-<input id="message" placeholder="Enter message">
+<p>Chat with other users in real time.</p>
 
-<button onclick="sendMessage()">Send</button>
+<a href="register.html">
+    <button>Register</button>
+</a>
 
-<div id="messages"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
-<script>
-
-    let stompClient;
-
-    function connect() {
-
-        const socket = new SockJS('/chat');
-
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, function () {
-
-            console.log("Connected to chat room");
-
-            stompClient.subscribe('/topic/messages', function (response) {
-
-                const message = JSON.parse(response.body);
-
-                const messageBox = document.getElementById("messages");
-
-                messageBox.innerHTML +=
-                    "<p><b>" + message.username + ":</b> "
-                    + message.message + "</p>";
-            });
-
-        });
-    }
-
-    function sendMessage() {
-
-        const username = document.getElementById("username").value;
-        const message = document.getElementById("message").value;
-
-        stompClient.send("/app/send", {}, JSON.stringify({
-            username: username,
-            message: message
-        }));
-    }
-
-    connect();
-
-</script>
+<a href="login.html">
+    <button>Login</button>
+</a>
 
 </body>
 </html>

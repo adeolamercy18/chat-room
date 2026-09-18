@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat Room</title>
+</head>
+
+<body>
+
+<h1>Chat Room</h1>
+
+<p>
+    Welcome, <b id="currentUser"></b>
+</p>
+
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<h3>Messages</h3>
+
+<div id="messages"></div>
+
+<br>
+
+<input
+        id="message"
+        type="text"
+        placeholder="Type your message"
+>
+
+<button onclick="sendMessage()">Send</button>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+
+    // Get the username that logged in
+    const username = sessionStorage.getItem("username");
+
+    // If nobody is logged in, go to login
+    if (!username) {
+        window.location.href = "login.html";
+    }
+
+    // Show username
+    document.getElementById("currentUser").innerText = username;
+
+
+    let stompClient;
+
+
+    // Connect to WebSocket
+    function connect() {
+
+        const socket = new SockJS("/chat");
+
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+
+            console.log("Connected to chat room");
+
+            stompClient.subscribe(
+                "/topic/messages",
+                function (response) {
+
+                    const message =
+                        JSON.parse(response.body);
+
+                    const messageBox =
+                        document.getElementById("messages");
+
+                    messageBox.innerHTML +=
+                        "<p><b>"
+                        + message.username
+                        + ":</b> "
+                        + message.message
+                        + "</p>";
+
+                }
+            );
+
+        }, function (error) {
+
+            console.log("WebSocket connection error:", error);
+
+        });
+
+    }
+
+
+    // Send message
+    function sendMessage() {
+
+        const messageInput =
+            document.getElementById("message");
+
+        const message =
+            messageInput.value.trim();
+
+
+        if (message === "") {
+            return;
+        }
+
+
+        if (!stompClient || !stompClient.connected) {
+
+            alert("Chat connection is not ready.");
+
+            return;
+        }
+
+
+        stompClient.send(
+            "/app/send",
+            {},
+            JSON.stringify({
+
+                username: username,
+
+                message: message
+
+            })
+        );
+
+
+        messageInput.value = "";
+
+    }
+
+
+    // Logout
+    function logout() {
+
+        sessionStorage.removeItem("username");
+
+        window.location.href = "login.html";
+
+    }
+
+
+    // Start connection
+    connect();
+
+</script>
+
+</body>
+
+</html>
